@@ -1,0 +1,56 @@
+syntax = "proto3";
+package hitch.v1;
+
+
+
+message HitchToHooman {
+    /// must be acked witin 100ms to indicate a human is watching the vehicle.
+    /// otherwise vehicle will halt
+    int64 sync  = 1;
+
+    oneof m {
+        Moving moving = 2;
+        Halted halted = 3;
+    }
+}
+
+message Moving {
+
+    /// -255 to +255 positive is foward, negative is backward, 0 is full stop
+    int32 x     = 2;
+
+    /// -255 to +255 positive is right, negative is left, 0 is dead center
+    int32 roll  = 3;
+}
+
+
+message Halted {
+    enum Reason {
+        IDLE        = 0;
+        OVERRIDE    = 1;
+        OBSTACLE    = 2;
+        CONFIDENCE  = 3;
+    }
+    Reason reason = 1;
+}
+
+
+message HoomanToHitch {
+    int64 sync = 1;
+    oneof m {
+        Engage   engage   = 2;
+
+        /// disengage ai and set manual target state, which vehicle will try to reach as fast as possible.
+        /// which means setting throttle to 0 is an emergency brake
+        /// input controller must reduce throttle in a curve expected by the operator when lifting their feet.
+        /// it must also add artificial inertia, because our vehicle has very high acceleration
+        Moving   target   = 3;
+    }
+}
+
+
+/// driveai do whatever driveai does
+message Engage {
+}
+
+
